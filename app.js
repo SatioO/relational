@@ -13,7 +13,14 @@
 	const Promise = require("bluebird");
 	const helmet = require("helmet");
 	const config = require("./config");
-	const { store, employee, company, auth } = require("./routes");
+	const {
+		store,
+		employee,
+		company,
+		contact,
+		business,
+		auth
+	} = require("./routes");
 
 	// * =================================================================
 	// * ========================= configuration =========================
@@ -78,6 +85,7 @@
 	app.use("/store", store);
 	app.use("/employee", employee);
 	app.use("/company", company);
+	app.use("/contact", contact);
 	app.use("/auth", auth);
 
 	app.get("*", (req, res) => {

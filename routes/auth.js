@@ -13,7 +13,17 @@
 
 		pool.getConnection((err, connection) => {
 			connection.query(
-				`SELECT * FROM user_master INNER JOIN user_role INNER JOIN user_rolemaster ON user_master.UserId = user_role.user_id AND user_rolemaster.RoleId = user_role.role_id WHERE User_Login = ? AND User_Password = ?`,
+				`SELECT
+					User_Role_Id,
+					Emp_ID,
+					Emp_Name,
+					Emp_MName,
+					Emp_Surname,
+					Emp_Email1,
+					Emp_State,
+					Emp_City
+					FROM user_master INNER JOIN employee_master 
+					ON user_master.User_Master_No = employee_master.Emp_Master_No WHERE User_Login = ? AND User_Password=?`,
 				[username, password],
 				(err, user) => {
 					if (err) {
@@ -21,21 +31,12 @@
 					}
 
 					if (!!user && user.length > 0) {
-						const user_info = {
-							UserId: user[0].UserId,
-							User_Login: user[0].User_Login,
-							Created_Date: user[0].Created_Date,
-							Updated_Date: user[0].Updated_Date,
-							RoleName: user[0].RoleName,
-							Role_Status: user[0].Role_Status
-						};
-
 						// append token in the response
-						user_info.Token = jwt.sign(user[0], config.jwt_secret, {
+						user[0].Token = jwt.sign(user[0], config.jwt_secret, {
 							expiresIn: 86400
 						});
 
-						return res.status(200).json(user_info);
+						return res.status(200).json(user[0]);
 					}
 
 					return res.status(200).json(null);
