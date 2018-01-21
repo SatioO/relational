@@ -6,6 +6,7 @@
 	// * =================================================================
 
 	const env = process.env.NODE_ENV || "local";
+	const path = require("path");
 	const express = require("express");
 	const logger = require("morgan");
 	const compression = require("compression");
@@ -42,7 +43,7 @@
 	}
 
 	app.use(bodyParser.json());
-	app.use(bodyParser.urlencoded({ extended: false }));
+	app.use(bodyParser.urlencoded({ extended: true }));
 
 	// compress responses that include a Cache-Control header with the no-transform directive,
 	app.use(compression());
