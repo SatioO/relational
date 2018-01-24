@@ -106,9 +106,9 @@
 		let query = "";
 
 		if (req.user.User_Role_Id !== 1) {
-			query = `SELECT *, cities.name as Con_City, states.name as Con_State FROM contacts INNER JOIN cities INNER JOIN states ON contacts.Con_City = cities.id AND contacts.Con_State = states.id WHERE CONCAT(Con_Email1, Con_Email2, Con_Address, Con_Country, Con_State, Con_City, Con_Name, Con_MName, Con_Surname, Con_Type) LIKE ? AND Con_Owner = ?`;
+			query = `SELECT *, cities.name as Con_City_Name, states.name as Con_State_Name FROM contacts INNER JOIN cities INNER JOIN states ON contacts.Con_City = cities.id AND contacts.Con_State = states.id WHERE Con_Name LIKE ? OR Con_MName Like ? OR Con_Surname Like ? OR Con_Address Like ? OR Con_Country Like ? OR Con_State Like ? OR Con_City Like ? AND Con_Owner = ?`;
 		} else {
-			query = `SELECT *, cities.name as Con_City, states.name as Con_State FROM contacts INNER JOIN cities INNER JOIN states ON contacts.Con_City = cities.id AND contacts.Con_State = states.id WHERE Con_Name LIKE ? OR Con_MName = ? OR Con_Surname = ? OR Con_Address = ? OR Con_Country = ? OR Con_State = ? OR Con_City =?`;
+			query = `SELECT *, cities.name as Con_City_Name, states.name as Con_State_Name FROM contacts INNER JOIN cities INNER JOIN states ON contacts.Con_City = cities.id AND contacts.Con_State = states.id WHERE Con_Name LIKE ? OR Con_MName Like ? OR Con_Surname Like ? OR Con_Address Like ? OR Con_Country Like ? OR Con_State Like ? OR Con_City Like ?`;
 		}
 
 		pool.getConnection((err, connection) => {

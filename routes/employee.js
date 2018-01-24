@@ -212,7 +212,7 @@
 		const q = req.query.q;
 		pool.getConnection((err, connection) => {
 			connection.query(
-				`SELECT * FROM employee_master WHERE  Emp_Name LIKE ? OR Emp_MName LIKE ? OR Emp_Surname LIKE ? OR Emp_Phone LIKE ? OR Emp_Pincode LIKE ? OR Emp_Add1 LIKE ? OR Emp_Email1 LIKE ?`,
+				`SELECT *, cities.name as Emp_City_Name, states.name as Emp_State_Name FROM employee_master INNER JOIN cities INNER JOIN states ON employee_master.Emp_City = cities.id AND employee_master.Emp_State = states.id WHERE Emp_Name LIKE ? OR Emp_MName LIKE ? OR Emp_Surname LIKE ? OR Emp_Phone LIKE ? OR Emp_Pincode LIKE ? OR Emp_Add1 LIKE ? OR Emp_Email1 LIKE ?`,
 				[`%${q}%`, `%${q}%`, `%${q}%`, `%${q}%`, `%${q}%`, `%${q}%`, `%${q}%`],
 				(err, rows) => {
 					if (err) {
