@@ -44,6 +44,7 @@
 
 	app.use(bodyParser.json());
 	app.use(bodyParser.urlencoded({ extended: true }));
+	app.use("/images", express.static(__dirname + "/uploads"));
 
 	// compress responses that include a Cache-Control header with the no-transform directive,
 	app.use(compression());

@@ -13,17 +13,21 @@
 
 		pool.getConnection((err, connection) => {
 			connection.query(
-				`SELECT
-					User_Role_Id,
+				`SELECT 
+					User_Role_Id, 
+					Emp_Master_No, 
 					Emp_ID,
 					Emp_Name,
 					Emp_MName,
 					Emp_Surname,
 					Emp_Email1,
-					Emp_State,
-					Emp_City
-					FROM user_master INNER JOIN employee_master 
-					ON user_master.User_Master_No = employee_master.Emp_Master_No WHERE User_Login = ? AND User_Password=?`,
+					Emp_Pic_Upload, 
+					cities.name as Emp_City_Name, 
+					states.name as Emp_State_Name 
+					FROM user_master INNER JOIN employee_master INNER JOIN cities INNER JOIN states 
+					ON user_master.User_Master_No = employee_master.Emp_Master_No 
+					AND employee_master.Emp_City = cities.id 
+					AND employee_master.Emp_State = states.id WHERE User_Login = ? AND User_Password=?`,
 				[username, password],
 				(err, user) => {
 					if (err) {

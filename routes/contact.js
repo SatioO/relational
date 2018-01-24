@@ -20,7 +20,7 @@
 		}
 
 		pool.getConnection((err, connection) => {
-			connection.query(`${query}`, [req.user.Emp_ID], (err, rows) => {
+			connection.query(`${query}`, [req.user.Emp_Master_No], (err, rows) => {
 				if (err) {
 					return res.status(500).json(err);
 				}
@@ -122,7 +122,7 @@
 					`%${q}%`,
 					`%${q}%`,
 					`%${q}%`,
-					req.user.Emp_ID
+					req.user.Emp_Master_No
 				],
 				(err, rows) => {
 					if (err) {

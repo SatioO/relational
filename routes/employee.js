@@ -36,16 +36,36 @@
 					if (err) {
 						return res.status(500).json(err);
 					}
-					const srcpath = `uploads/${req.user.Emp_Name}${
-						req.user.Emp_Surname
-					}/${employee.Emp_Pic_Upload}`;
-					const dstpath = `uploads/${employee.Emp_Name}${
-						employee.Emp_Surname
-					}/${employee.Emp_Pic_Upload}`;
-					fs.move(srcpath, dstpath, err => {
-						if (err) return res.status(500).json(err);
-						return res.status(200).json(rows);
-					});
+
+					connection.query(
+						"INSERT INTO user_master SET User_Master_No = ?, User_Role_Id = ?, User_Login = ?, User_Password = ?, CreatedBy = ?, UpdatedBy = ?",
+						[
+							rows.insertId,
+							3,
+							(employee.Emp_Name + employee.Emp_Surname).toLowerCase(),
+							(employee.Emp_Name + employee.Emp_Surname).toLowerCase(),
+							rows.insertId,
+							rows.insertId
+						],
+						(err, rows) => {
+							if (err) {
+								return res.status(500).json(err);
+							}
+
+							const srcpath = `uploads/${req.user.Emp_Name}${
+								req.user.Emp_Surname
+							}/${employee.Emp_Pic_Upload}`;
+
+							const dstpath = `uploads/${employee.Emp_Name}${
+								employee.Emp_Surname
+							}/${employee.Emp_Pic_Upload}`;
+
+							fs.move(srcpath, dstpath, err => {
+								if (err) return res.status(500).json(err);
+								return res.status(200).json(rows);
+							});
+						}
+					);
 				}
 			);
 			connection.release();
@@ -54,7 +74,7 @@
 
 	router.put("/", isAuthenticated, (req, res) => {
 		const employee = req.body.employee;
-		console.log(employee.Emp_ID);
+
 		pool.getConnection((err, connection) => {
 			connection.query(
 				"UPDATE employee_master SET Emp_Title = ?, Emp_Name = ?, Emp_MName = ?, Emp_Surname = ?, Emp_Gender = ?, Emp_DOB = ?, Emp_Pic_Upload = ?, Emp_Marital_Status = ?, Emp_BloodG = ?, Emp_DOAnni = ?, Emp_DOJ = ?, Emp_DOR = ?, Emp_CCode = ?, Emp_Phone = ?, Emp_MCode = ?, Emp_Mobile = ?, Emp_AMCode = ?, Emp_AMobile = ?, Emp_Email1 = ?, Emp_Email2 = ?, Emp_Linkedin = ?, Emp_Twitter = ?, Emp_FB = ?, Emp_Add1 = ?, Emp_Country = ?, Emp_State = ?, Emp_City = ?, Emp_Pincode = ?, Emp_Add2 = ?, Emp_Country2 = ?, Emp_State2 = ?, Emp_City2 = ?, Emp_Pincode2 = ?, Emp_PAN = ?, Emp_Adhar = ?, Emp_Bank_Name = ?, Emp_Bank_AccNo = ?, Emp_IFSC_Code = ?, Emp_Pass_No = ?, Emp_Pass_Expiry = ?, Emp_Pass_Upload = ?, Emp_FC1_Name = ?, Emp_FC1_Relation = ?, Emp_FC1_Email = ?, Emp_FC2_Name = ?, Emp_FC2_Relation = ?, Emp_FC2_Email = ?, Emp_FC3_Name = ?, Emp_FC3_Relation = ?, Emp_FC3_Email = ?, Emp_FC4_Name = ?, Emp_FC4_Relation = ?,  Emp_FC4_Email = ?, Emp_FC5_Name = ?, Emp_FC5_Relation = ?, Emp_FC5_Email = ?, Emp_FC6_Name = ?, Emp_FC6_Relation = ?, Emp_FC6_Email = ?, Emp_Ref1_Name = ?, Emp_Ref1_Company = ?, Emp_Ref1_Phone = ?, Emp_Ref2_Name = ?, Emp_Ref2_Company = ?, Emp_Ref2_Phone = ?, Emp_Status = ?, UpdatedBy = ? WHERE Emp_ID = ?",
@@ -130,10 +150,37 @@
 				],
 				(err, rows) => {
 					if (err) {
-						console.log(err);
 						return res.status(500).json(err);
 					}
-					return res.status(200).json(rows);
+
+					const srcpath = `uploads/${req.user.Emp_Name}${
+						req.user.Emp_Surname
+					}/${employee.Emp_Pic_Upload}`;
+
+					const dstpath = `uploads/${employee.Emp_Name}${
+						employee.Emp_Surname
+					}/${employee.Emp_Pic_Upload}`;
+
+					fs.pathExists(dstpath, (err, exists) => {
+						if (err) {
+							return res.status(500).json(err);
+						}
+
+						if (!!exists) {
+							return res.status(200).json(rows);
+						}
+
+						fs.pathExists(srcpath, (err, exists) => {
+							if (exists) {
+								fs.move(srcpath, dstpath, err => {
+									if (err) return res.status(500).json(err);
+									return res.status(200).json(rows);
+								});
+							} else {
+								return res.status(200).json(rows);
+							}
+						});
+					});
 				}
 			);
 			connection.release();
@@ -159,11 +206,10 @@
 
 	router.get("/search", (req, res) => {
 		const q = req.query.q;
-
 		pool.getConnection((err, connection) => {
 			connection.query(
-				`SELECT * FROM employee_master WHERE CONCAT(Emp_Email1, Emp_City, Emp_Add1, Emp_State, Emp_Country, Emp_MName, Emp_Name, Emp_Surname, Emp_Phone, Emp_Pincode) LIKE ?`,
-				[`%${q}%`],
+				`SELECT * FROM employee_master WHERE  Emp_Name LIKE ? OR Emp_MName LIKE ? OR Emp_Surname LIKE ? OR Emp_Phone LIKE ? OR Emp_Pincode LIKE ? OR Emp_Add1 LIKE ? OR Emp_Email1 LIKE ?`,
+				[`%${q}%`, `%${q}%`, `%${q}%`, `%${q}%`, `%${q}%`, `%${q}%`, `%${q}%`],
 				(err, rows) => {
 					if (err) {
 						return res.status(500).json(err);
@@ -174,6 +220,5 @@
 			connection.release();
 		});
 	});
-
 	module.exports = router;
 })();
