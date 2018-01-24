@@ -4,12 +4,15 @@ const fs = require("fs-extra");
 const storage = multer.diskStorage({
 	destination: function(req, file, cb) {
 		fs.ensureDir(
-			`uploads/${req.user.Emp_Name}${req.user.Emp_Surname}/`,
+			`tmp/uploads/${req.user.Emp_Name}${req.user.Emp_Surname}/`,
 			(err, exists) => {
 				if (err) {
 					return cb(err, null);
 				}
-				return cb(null, `uploads/${req.user.Emp_Name}${req.user.Emp_Surname}/`);
+				return cb(
+					null,
+					`tmp/uploads/${req.user.Emp_Name}${req.user.Emp_Surname}/`
+				);
 			}
 		);
 	},
@@ -19,7 +22,6 @@ const storage = multer.diskStorage({
 });
 
 const upload = multer({
-	dest: `uploads/`,
 	storage: storage
 });
 

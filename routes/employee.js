@@ -4,6 +4,7 @@
 	const express = require("express");
 	const fs = require("fs-extra");
 	const pool = require("../config/connect-db");
+	const mv = require("mv");
 	const { multer, isAuthenticated } = require("../middlewares");
 	const router = express.Router();
 
@@ -52,17 +53,23 @@
 								return res.status(500).json(err);
 							}
 
-							const srcpath = `uploads/${req.user.Emp_Name}${
+							const srcpath = `tmp/uploads/${req.user.Emp_Name}${
 								req.user.Emp_Surname
-							}/${employee.Emp_Pic_Upload}`;
+							}/`;
 
 							const dstpath = `uploads/${employee.Emp_Name}${
 								employee.Emp_Surname
-							}/${employee.Emp_Pic_Upload}`;
+							}/`;
 
-							fs.move(srcpath, dstpath, err => {
-								if (err) return res.status(500).json(err);
-								return res.status(200).json(rows);
+							fs.ensureDir(dstpath, err => {
+								if (err) {
+									return res.status(500).json(err);
+								}
+
+								mv(srcpath, dstpath, err => {
+									if (err) return res.status(500).json(err);
+									return res.status(200).json(rows);
+								});
 							});
 						}
 					);
@@ -153,33 +160,30 @@
 						return res.status(500).json(err);
 					}
 
-					const srcpath = `uploads/${req.user.Emp_Name}${
+					const srcpath = `tmp/uploads/${req.user.Emp_Name}${
 						req.user.Emp_Surname
-					}/${employee.Emp_Pic_Upload}`;
+					}/`;
 
 					const dstpath = `uploads/${employee.Emp_Name}${
 						employee.Emp_Surname
-					}/${employee.Emp_Pic_Upload}`;
+					}/`;
 
-					fs.pathExists(dstpath, (err, exists) => {
+					fs.readdir(srcpath, (err, files) => {
 						if (err) {
 							return res.status(500).json(err);
 						}
 
-						if (!!exists) {
-							return res.status(200).json(rows);
-						}
-
-						fs.pathExists(srcpath, (err, exists) => {
-							if (exists) {
-								fs.move(srcpath, dstpath, err => {
-									if (err) return res.status(500).json(err);
-									return res.status(200).json(rows);
+						files.forEach(file => {
+							try {
+								fs.moveSync(srcpath + file, dstpath + file, {
+									overwrite: true
 								});
-							} else {
-								return res.status(200).json(rows);
+							} catch (e) {
+								return res.status(500).json(err);
 							}
 						});
+
+						return res.status(200).json(rows);
 					});
 				}
 			);
@@ -190,7 +194,7 @@
 	router.post(
 		"/upload",
 		isAuthenticated,
-		multer.single("photos"),
+		multer.array("uploads[]", 12),
 		(req, res) => {
 			if (!req.file) {
 				return res.send({
